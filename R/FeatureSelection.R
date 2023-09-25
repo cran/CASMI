@@ -212,17 +212,21 @@ generateResults <- function(data, indexCASMI, kappaStarCASMI, alpha = 0.05){ # r
 #' @examples
 #' ## Generate a toy dataset: "data"
 #' ## Features 1 and 3 are associated with Y, while feature 2 is irrelevant.
-#' ## The outcome variable Y must be in the last column. Features must be discrete.
-#' n=10000
-#' x1=rbinom(n,3,0.5)+0.2
-#' x2=rbinom(n,2,0.8)+0.5
-#' x3=rbinom(n,5,0.3)
-#' error=round(runif(n,min=-1,max=1))
-#' y=x1+x3+error
-#' data=data.frame(cbind(x1,x2,x3,y))
-#' colnames(data) = c("feature1", "feature2", "feature3", "Y")
+#' ## The outcome variable Y must be discrete and in the LAST column. Features must be discrete.
+#' n <- 10000
+#' set.seed(1)
+#' x1 <- rbinom(n, 3, 0.5) + 0.2
+#' set.seed(2)
+#' x2 <- rbinom(n, 2, 0.8) + 0.5
+#' set.seed(3)
+#' x3 <- rbinom(n, 5, 0.3)
+#' set.seed(4)
+#' error <- round(runif(n, min=-1, max=1))
+#' y <- x1 + x3 + error
+#' data <- data.frame(cbind(x1, x2, x3, y))
+#' colnames(data) <- c("feature1", "feature2", "feature3", "Y")
 #'
-#' ## Select features and relevant results from the toy dataset "data"
+#' ## Select features and provide relevant results for the toy dataset "data"
 #' CASMI.selectFeatures(data)
 #'
 #' @importFrom EntropyEstimation Entropy.z MI.z
@@ -235,6 +239,7 @@ generateResults <- function(data, indexCASMI, kappaStarCASMI, alpha = 0.05){ # r
 
 CASMI.selectFeatures <-function(data, alpha.filter=0.1, alpha=0.05){
   # outcome must be in the last column
+
 
   # Step 1: return dependent features, step1Index[]
 

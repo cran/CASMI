@@ -2,6 +2,7 @@
 
 export(AQI)
 export(CASMI.selectFeatures)
+export(autoBin.binary)
 importFrom(EntropyEstimation,Entropy.z)
 importFrom(EntropyEstimation,MI.z)
 importFrom(entropy,entropy.plugin)

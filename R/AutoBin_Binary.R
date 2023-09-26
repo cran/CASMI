@@ -1,6 +1,12 @@
 # return suggested threshold for a quantitative variable
 autoBinThresh <- function(data, colIndex){ # column index of X that needs auto binning
-  sortedXY <- data[order(data[,colIndex]), c(colIndex,ncol(data))] # subset, sort by X
+
+  # deal with NAs
+  if (sum(!is.na(data[,colIndex])) <= 1) {
+    stop("There is none or only one available value in a selected variable. No categorization is needed. Please double-check your input variables.")
+  }
+
+  sortedXY <- na.omit( data[order(data[,colIndex]), c(colIndex,ncol(data))] ) # subset, sort by X
   maxMI <- 0
   for(i in 1:(nrow(sortedXY) - 1)){
     threshold <- (sortedXY[i,1] + sortedXY[i+1,1]) / 2
@@ -27,6 +33,7 @@ autoBinThresh <- function(data, colIndex){ # column index of X that needs auto b
 #' autoBin.binary(iris, c(1,2,3,4))
 #'
 #' @importFrom EntropyEstimation MI.z
+#' @importFrom stats na.omit
 #'
 #' @export
 

@@ -4,14 +4,30 @@
 \alias{CASMI.selectFeatures}
 \title{\pkg{CASMI}-Based Feature Selection}
 \usage{
-CASMI.selectFeatures(data, alpha.filter = 0.1, alpha = 0.05)
+CASMI.selectFeatures(
+  data,
+  feature.na.handle = "stepwise",
+  alpha.filter = 0.1,
+  alpha = 0.05,
+  intermediate.steps = FALSE,
+  kappa.star.cap = 1,
+  feature.num.cap = 15
+)
 }
 \arguments{
 \item{data}{data frame (features as columns and observations as rows). It requires at least one feature and only one outcome. The features must be discrete. The outcome variable (Y) must be in the last column.}
 
-\item{alpha.filter}{level of significance for the mutual information test of independence in step 1 of the features selection. The smaller the alpha.filter, the fewer the features sent to step 2 (<doi:10.3390/e21121179>). By default, `alpha.filter = 0.1`.}
+\item{feature.na.handle}{options for handling NA values in the data. There are three options: `"stepwise", "na.omit", "NA as a category"`. `feature.na.handle = "stepwise"` excludes NA rows only when a particular variable is being calculated. For example, suppose we have data(Feature1: A, NA, B; Feature2: C, D, E; Feature3: F, G, H; Outcome: O, P, Q); the second observation will be excluded only when a particular step includes Feature1, but will not be excluded when a step calculates among Feature2, Feature3, and the Outcome. This option is designed to take advantage of a maximum number of data points. `feature.na.handle = "na.omit"` excludes observations with any NA values at the beginning of the analysis. `feature.na.handle = "NA as a category"` regards the NA value as a new category. This is designed to be used when NA values in the data have a consistent meaning instead of being missing values. For example, in survey data asking for comments, each NA value might consistently mean "no opinion." By default, `feature.na.handle = "stepwise"`.}
+
+\item{alpha.filter}{level of significance for the mutual information test of independence in step 1 of the features selection (initial screening). The smaller the alpha.filter, the fewer the features sent to step 2 (<doi:10.3390/e21121179>). By default, `alpha.filter = 0.1`.}
 
 \item{alpha}{level of significance for the confidence intervals in final results. By default, `alpha = 0.05`.}
+
+\item{intermediate.steps}{output intermediate steps. By default, `intermediate.steps = FALSE`. Suggested to set as `TRUE` for feature selection processes that may take a long time.}
+
+\item{kappa.star.cap}{a threshold of kappa* for stopping the feature selection process. By default, `kappa.star.cap = 1.0`, which is the maximum possible value. A smaller value may result in less final features but a shorter computing time.}
+
+\item{feature.num.cap}{the maximum number of features to be selected. By default, `feature.num.cap = 15`. A higher value may result in more final features but a longer computing time.}
 }
 \value{
 `CASMI.selectFeatures()` returns selected features and relevant information, including the estimated Kappa* for all selected features (`$KappaStar`) and the corresponding confidence interval (`$KappaStarCI`). The selected features are ranked. The Standardized Mutual Information using the z estimator (`SMIz`) and the corresponding confidence interval (`CI.SMIz.Lower` and `CI.SMIz.Upper`) are given for each selected feature. The p-value from the mutual information test of independence using the z estimator (`P-value.MIz`) is given for each selected feature.

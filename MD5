@@ -1,8 +1,8 @@
-26b61a4100f2e6081743516524bed4d1 *DESCRIPTION
+20cc0baf0804337c773787dd1af05116 *DESCRIPTION
 3cd70b8886eaf37178f08c13f2015bc8 *NAMESPACE
 edf38a3230ac6c636445f4ad4746ce5c *R/AQI.R
-6f8cffad0785a7d61765735ad0fa48b6 *R/AutoBin_Binary.R
-1eb8bb889baed56d35a713366acc486a *R/FeatureSelection.R
+e6b14e5c9d344ebac1425699cd33e680 *R/AutoBin_Binary.R
+120b0a4b33251d207ccf1d14efd52da9 *R/FeatureSelection.R
 fed790b82260e26a9fc14184253a444e *man/AQI.Rd
-67234a3e68864300300b342eea9c4e26 *man/CASMI.selectFeatures.Rd
-b3c70b0b8975e8dad9c9849517cd964a *man/autoBin.binary.Rd
+f60f12d8929b1fe2843919f4ee1dae38 *man/CASMI.selectFeatures.Rd
+8338a989feb927476788d6b45ec198f3 *man/autoBin.binary.Rd

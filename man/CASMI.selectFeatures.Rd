@@ -9,7 +9,7 @@ CASMI.selectFeatures(
   feature.na.handle = "stepwise",
   alpha.filter = 0.1,
   alpha = 0.05,
-  intermediate.steps = FALSE,
+  intermediate.steps = TRUE,
   kappa.star.cap = 1,
   feature.num.cap = 15
 )
@@ -23,9 +23,9 @@ CASMI.selectFeatures(
 
 \item{alpha}{level of significance for the confidence intervals in final results. By default, `alpha = 0.05`.}
 
-\item{intermediate.steps}{output intermediate steps. By default, `intermediate.steps = FALSE`. Suggested to set as `TRUE` for feature selection processes that may take a long time.}
+\item{intermediate.steps}{output intermediate steps. By default, `intermediate.steps = TRUE`. Set to `FALSE` for showing only summary results.}
 
-\item{kappa.star.cap}{a threshold of kappa* for stopping the feature selection process. By default, `kappa.star.cap = 1.0`, which is the maximum possible value. A smaller value may result in less final features but a shorter computing time.}
+\item{kappa.star.cap}{a threshold of `kappa*` for pausing the feature selection process. The program will automatically pause at the first feature of which the `kappa*` value exceeds the kappa.star.cap threshold. By default, `kappa.star.cap = 1.0`, which is the maximum possible value, and this will include all possible features. A smaller value may result in less final features but a shorter computing time.}
 
 \item{feature.num.cap}{the maximum number of features to be selected. By default, `feature.num.cap = 15`. A higher value may result in more final features but a longer computing time.}
 }

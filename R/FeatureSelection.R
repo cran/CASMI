@@ -298,8 +298,8 @@ check_length <- function(column) {
 #' @param feature.na.handle options for handling NA values in the data. There are three options: `"stepwise", "na.omit", "NA as a category"`. `feature.na.handle = "stepwise"` excludes NA rows only when a particular variable is being calculated. For example, suppose we have data(Feature1: A, NA, B; Feature2: C, D, E; Feature3: F, G, H; Outcome: O, P, Q); the second observation will be excluded only when a particular step includes Feature1, but will not be excluded when a step calculates among Feature2, Feature3, and the Outcome. This option is designed to take advantage of a maximum number of data points. `feature.na.handle = "na.omit"` excludes observations with any NA values at the beginning of the analysis. `feature.na.handle = "NA as a category"` regards the NA value as a new category. This is designed to be used when NA values in the data have a consistent meaning instead of being missing values. For example, in survey data asking for comments, each NA value might consistently mean "no opinion." By default, `feature.na.handle = "stepwise"`.
 #' @param alpha.filter level of significance for the mutual information test of independence in step 1 of the features selection (initial screening). The smaller the alpha.filter, the fewer the features sent to step 2 (<doi:10.3390/e21121179>). By default, `alpha.filter = 0.1`.
 #' @param alpha level of significance for the confidence intervals in final results. By default, `alpha = 0.05`.
-#' @param intermediate.steps output intermediate steps. By default, `intermediate.steps = FALSE`. Suggested to set as `TRUE` for feature selection processes that may take a long time.
-#' @param kappa.star.cap a threshold of kappa* for stopping the feature selection process. By default, `kappa.star.cap = 1.0`, which is the maximum possible value. A smaller value may result in less final features but a shorter computing time.
+#' @param intermediate.steps output intermediate steps. By default, `intermediate.steps = TRUE`. Set to `FALSE` for showing only summary results.
+#' @param kappa.star.cap a threshold of `kappa*` for pausing the feature selection process. The program will automatically pause at the first feature of which the `kappa*` value exceeds the kappa.star.cap threshold. By default, `kappa.star.cap = 1.0`, which is the maximum possible value, and this will include all possible features. A smaller value may result in less final features but a shorter computing time.
 #' @param feature.num.cap the maximum number of features to be selected. By default, `feature.num.cap = 15`. A higher value may result in more final features but a longer computing time.
 #' @return `CASMI.selectFeatures()` returns selected features and relevant information, including the estimated Kappa* for all selected features (`$KappaStar`) and the corresponding confidence interval (`$KappaStarCI`). The selected features are ranked. The Standardized Mutual Information using the z estimator (`SMIz`) and the corresponding confidence interval (`CI.SMIz.Lower` and `CI.SMIz.Upper`) are given for each selected feature. The p-value from the mutual information test of independence using the z estimator (`P-value.MIz`) is given for each selected feature.
 #' @examples
@@ -334,7 +334,7 @@ CASMI.selectFeatures <- function(data,  # outcome must be in the last column
                                  feature.na.handle = "stepwise",
                                  alpha.filter = 0.1,
                                  alpha = 0.05,
-                                 intermediate.steps = FALSE,
+                                 intermediate.steps = TRUE,
                                  kappa.star.cap = 1.0,
                                  feature.num.cap = 15) {
 
@@ -342,10 +342,6 @@ CASMI.selectFeatures <- function(data,  # outcome must be in the last column
   # check data type
   if (!is.data.frame(data)) {
     stop("Error: The input is not a dataframe.")
-  }
-
-  if (kappa.star.cap<=0) {
-    stop("Error: `kappa.star.cap` must be greater than 0. ")
   }
 
 
@@ -392,6 +388,36 @@ CASMI.selectFeatures <- function(data,  # outcome must be in the last column
   }
 
 
+  if (!is.numeric(alpha.filter)) {
+    stop("Error: 'alpha.filter' should be numeric.")
+  } else if (alpha.filter < 0 || alpha.filter > 1) {
+    stop("Error: 'alpha.filter' should be between 0 and 1.")
+  }
+
+  if (!is.numeric(alpha)) {
+    stop("Error: 'alpha' should be numeric.")
+  } else if (alpha < 0 || alpha > 1) {
+    stop("Error: 'alpha' should be between 0 and 1.")
+  }
+
+  if (!is.logical(intermediate.steps) || length(intermediate.steps) != 1) {
+    stop("Error: 'intermediate.steps' must be either TRUE or FALSE.")
+  }
+
+  if (!is.numeric(kappa.star.cap)) {
+    stop("Error: 'kappa.star.cap' should be numeric.")
+  } else if (kappa.star.cap < 0 || kappa.star.cap > 1) {
+    stop("Error: 'kappa.star.cap' should be between 0 and 1.")
+  }
+
+  if (!is.numeric(feature.num.cap)) {
+    stop("Error: 'feature.num.cap' should be numeric.")
+  } else if (feature.num.cap < 1) {
+    stop("Error: 'feature.num.cap' should be at least 1.")
+  }
+
+
+
 
   start_time <- proc.time()
 
@@ -413,7 +439,7 @@ CASMI.selectFeatures <- function(data,  # outcome must be in the last column
 
   if (count == 0) {
     warning(
-      "No associated variables are found toward the outcome. Please double-check: 1. the outcome variable is in the last column; 2. a reasonable alpha.filter is set (by default it's 0.1)."
+      "No associated variables are found toward the outcome. Please double-check: 1. the outcome variable is the last column; 2. a reasonable 'alpha.filter' is set (by default it's 0.1)."
     )
 
     indexCASMI = NULL
@@ -443,7 +469,7 @@ CASMI.selectFeatures <- function(data,  # outcome must be in the last column
 
     if(intermediate.steps) {
       intermediateCount = 1
-      cat("Selected Feature #", intermediateCount, ", Column Index:", maxIndex, ", Kappa*:", maxKappaStar, ", Time Taken (elapsed (sec)):", (proc.time() - start_time)["elapsed"], "\n")
+      cat("Selecting Feature:", intermediateCount, ", selected column (idx.):", maxIndex, ", Kappa*:", maxKappaStar, ", elapsed (sec.):", (proc.time() - start_time)["elapsed"], "\n")
     }
 
     if (length(step1Index) == 1) {
@@ -481,26 +507,26 @@ CASMI.selectFeatures <- function(data,  # outcome must be in the last column
 
         if(intermediate.steps) {
           intermediateCount = intermediateCount + 1
-          cat("Selected Feature #", intermediateCount, ", Column Index:", maxIndex, ", Kappa*:", maxKappaStar, ", Time Taken (elapsed (sec)):", (proc.time() - start_time)["elapsed"], "\n")
+          cat("Selecting Feature:", intermediateCount, ", selected column (idx.):", maxIndex, ", Kappa*:", maxKappaStar, ", elapsed (sec.):", (proc.time() - start_time)["elapsed"], "\n")
         }
       }
 
       if (maxKappaStar >= kappa.star.cap) {
         warning(
-          "The feature selection process stopped automatically. The kappa* for currently selected features reached the pre-set 'kappa.star.cap' value. Adjust parameters to include more or fewer features."
+          "Adjust arguments to include more or fewer features, if needed.\nThe feature selection process paused automatically because kappa* of currently selected features reached the pre-set 'kappa.star.cap' value. "
         )
       }
 
       if (length(indexCASMI) >= feature.num.cap) {
         warning(
-          "The feature selection process stopped automatically. The number of currently selected features reached the pre-set 'feature.num.cap' value. Adjust parameters to include more or fewer features."
+          "Adjust arguments to include more or fewer features, if needed.\nThe feature selection process paused automatically because the number of selected features reached the pre-set 'feature.num.cap' value."
         )
       }
     }
 
     if(intermediate.steps) {
-      cat("The end.\n\n")
-      cat("Generating summary...\n\n")
+      cat("The end.\n")
+      cat("In progress of generating summary.\n\n")
     }
 
     list = generateResults(data, indexCASMI, kappaStarCASMI, alpha)

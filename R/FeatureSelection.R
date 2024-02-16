@@ -162,19 +162,19 @@ ftable2xytable <- function(ftable) { # convert an ftable to a regular XYtable wh
 Kappas <- function(data, idxFeatures){
   # input data, index(es) of feature(s); outcome must be in the last column
 
-    # ftable automatically handles NA values
-    tmpIndexFnO = c(idxFeatures, ncol(data)) # Index of features and outcome
-    ftable = ftable(table(data[tmpIndexFnO]))
+  # ftable automatically handles NA values
+  tmpIndexFnO = c(idxFeatures, ncol(data)) # Index of features and outcome
+  ftable = ftable(table(data[tmpIndexFnO]))
 
-    Xmargin <- rowSums(ftable)
-    Ymargin <- colSums(ftable)
-    n <- sum(ftable)
+  Xmargin <- rowSums(ftable)
+  Ymargin <- colSums(ftable)
+  n <- sum(ftable)
 
-    kappa.z = MI.z(ftable) / Entropy.z(Ymargin) # same as smi.z
+  kappa.z = MI.z(ftable) / Entropy.z(Ymargin) # same as smi.z
 
-    kappaStar = kappa.z * (1 - sum(Xmargin == 1L) / n)
+  kappaStar = kappa.z * (1 - sum(Xmargin == 1L) / n)
 
-    return(list(kappa.z = kappa.z, kappa.star = kappaStar))
+  return(list(kappa.z = kappa.z, kappa.star = kappaStar))
 }
 
 
@@ -222,23 +222,25 @@ generateResults <-
     df <-
       data.frame(
         indexCASMI,
-        nameCASMI,
         sample_size,
-        round(kappaStarCASMI, 6),
-        round(SMIziCASMI, 6),
-        round(SMIziCASMI.CI, 6),
-        round(PziCASMI, 6)
+        round(kappaStarCASMI, 4),
+        round(SMIziCASMI, 4),
+        round(SMIziCASMI.CI, 4),
+        sprintf("%.4f", round(PziCASMI, 4)),
+        nameCASMI,
+        row.names = NULL
       )
+
     colnames(df) <-
       c(
-        "Var.Index",
-        "Var.Name",
+        "Var.Idx",
         "n",
         "Kappa*",
         "SMIz",
-        "CI.SMIz.Lower",
-        "CI.SMIz.Upper",
-        "P-value.MIz"
+        "SMIz.Low",
+        "SMIz.Upr",
+        "p.MIz",
+        "Var.Name"
       )
 
 
@@ -294,18 +296,18 @@ check_length <- function(column) {
 #'
 #' Selects the most relevant features toward an outcome. It automatically learns the number of features to be selected, and the selected features are ranked. The method automatically handles the feature redundancy issue. (synonyms of "feature": "variable" "factor" "attribute") \cr
 #' For more information, please refer to the corresponding publication: Shi, J., Zhang, J. and Ge, Y. (2019), "\pkg{CASMI}—An Entropic Feature Selection Method in Turing’s Perspective" <doi:10.3390/e21121179>
-#' @param data data frame (features as columns and observations as rows). It requires at least one feature and only one outcome. The features must be discrete. The outcome variable (Y) must be in the last column.
+#' @param data data frame (features as columns and observations as rows). The outcome variable (Y) MUST be the last column. It requires at least one features and only one outcome. Both the features (Xs) and the outcome (Y) MUST be discrete (if not naturally discrete, you may try the `autoBin.binary` function in the same package).
 #' @param feature.na.handle options for handling NA values in the data. There are three options: `"stepwise", "na.omit", "NA as a category"`. `feature.na.handle = "stepwise"` excludes NA rows only when a particular variable is being calculated. For example, suppose we have data(Feature1: A, NA, B; Feature2: C, D, E; Feature3: F, G, H; Outcome: O, P, Q); the second observation will be excluded only when a particular step includes Feature1, but will not be excluded when a step calculates among Feature2, Feature3, and the Outcome. This option is designed to take advantage of a maximum number of data points. `feature.na.handle = "na.omit"` excludes observations with any NA values at the beginning of the analysis. `feature.na.handle = "NA as a category"` regards the NA value as a new category. This is designed to be used when NA values in the data have a consistent meaning instead of being missing values. For example, in survey data asking for comments, each NA value might consistently mean "no opinion." By default, `feature.na.handle = "stepwise"`.
 #' @param alpha.filter level of significance for the mutual information test of independence in step 1 of the features selection (initial screening). The smaller the alpha.filter, the fewer the features sent to step 2 (<doi:10.3390/e21121179>). By default, `alpha.filter = 0.1`.
 #' @param alpha level of significance for the confidence intervals in final results. By default, `alpha = 0.05`.
-#' @param intermediate.steps output intermediate steps. By default, `intermediate.steps = TRUE`. Set to `FALSE` for showing only summary results.
-#' @param kappa.star.cap a threshold of `kappa*` for pausing the feature selection process. The program will automatically pause at the first feature of which the `kappa*` value exceeds the kappa.star.cap threshold. By default, `kappa.star.cap = 1.0`, which is the maximum possible value, and this will include all possible features. A smaller value may result in less final features but a shorter computing time.
-#' @param feature.num.cap the maximum number of features to be selected. By default, `feature.num.cap = 15`. A higher value may result in more final features but a longer computing time.
-#' @return `CASMI.selectFeatures()` returns selected features and relevant information, including the estimated Kappa* for all selected features (`$KappaStar`) and the corresponding confidence interval (`$KappaStarCI`). The selected features are ranked. The Standardized Mutual Information using the z estimator (`SMIz`) and the corresponding confidence interval (`CI.SMIz.Lower` and `CI.SMIz.Upper`) are given for each selected feature. The p-value from the mutual information test of independence using the z estimator (`P-value.MIz`) is given for each selected feature.
+#' @param intermediate.steps output the intermediate process. By default, `intermediate.steps = TRUE`. Set to `FALSE` for showing only summary results.
+#' @param kappa.star.cap a threshold of `kappa*` for pausing the feature selection process. The program will automatically pause at the first feature of which the `kappa*` value exceeds the kappa.star.cap threshold. By default, `kappa.star.cap = 1.0`, which is the maximum possible value. A lower value may result in fewer final features but less computing time.
+#' @param feature.num.cap the maximum number of features to be selected. A lower value may result in fewer final features but less computing time.
+#' @return `CASMI.selectFeatures()` returns selected features and relevant information, including the estimated Kappa* for all selected features (`$KappaStar`) and the corresponding confidence interval (`$KappaStarCI`). The selected features are ranked. The Standardized Mutual Information using the z estimator (`SMIz`) and the corresponding confidence interval (`SMIz.Low` for lower bound, `SMIz.Upr` for upper bound) are given for each selected feature (`Var.Idx` for column index, `Var.Name` for column name). The p-value from the mutual information test of independence using the z estimator (`p.MIz`) is given for each selected feature.
 #' @examples
 #' ## Generate a toy dataset: "data"
 #' ## Features 1 and 3 are associated with Y, while feature 2 is irrelevant.
-#' ## The outcome variable Y must be discrete and in the LAST column. Features must be discrete.
+#' ## The outcome variable Y must be discrete and be the LAST column. Features must be discrete.
 #' n <- 10000
 #' set.seed(1)
 #' x1 <- rbinom(n, 3, 0.5) + 0.2
@@ -322,6 +324,15 @@ check_length <- function(column) {
 #' ## Select features and provide relevant results for the toy dataset "data"
 #' CASMI.selectFeatures(data)
 #'
+#' ## For showing only the summary results
+#' CASMI.selectFeatures(data, intermediate.steps = FALSE)
+#'
+#' ## Adjust 'feature.num.cap' for including fewer features.
+#' ## A lower 'feature.num.cap' value may result in fewer final features but less computing time.
+#' ## For example, if needing only the top one feature based on the toy dataset:
+#' CASMI.selectFeatures(data, feature.num.cap = 1)
+#'
+#'
 #' @importFrom EntropyEstimation Entropy.z MI.z
 #' @importFrom entropy entropy.plugin mi.plugin
 #' @importFrom stats pchisq qnorm
@@ -336,13 +347,16 @@ CASMI.selectFeatures <- function(data,  # outcome must be in the last column
                                  alpha = 0.05,
                                  intermediate.steps = TRUE,
                                  kappa.star.cap = 1.0,
-                                 feature.num.cap = 15) {
-
+                                 feature.num.cap = ncol(data)) {
 
   # check data type
   if (!is.data.frame(data)) {
-    stop("Error: The input is not a dataframe.")
+    stop("Error: The input is not a data frame type.")
   }
+
+
+  data <- as.data.frame(data)
+
 
 
   outcome.has.na <- any(is.na(data[,ncol(data)]))
@@ -469,7 +483,7 @@ CASMI.selectFeatures <- function(data,  # outcome must be in the last column
 
     if(intermediate.steps) {
       intermediateCount = 1
-      cat("Selecting Feature:", intermediateCount, ", selected column (idx.):", maxIndex, ", Kappa*:", maxKappaStar, ", elapsed (sec.):", (proc.time() - start_time)["elapsed"], "\n")
+      cat("Selecting Feature:", intermediateCount, "- selected column (idx.):", maxIndex, ", Kappa*:", maxKappaStar, ", elapsed (sec.):", (proc.time() - start_time)["elapsed"], "\n")
     }
 
     if (length(step1Index) == 1) {
@@ -507,25 +521,25 @@ CASMI.selectFeatures <- function(data,  # outcome must be in the last column
 
         if(intermediate.steps) {
           intermediateCount = intermediateCount + 1
-          cat("Selecting Feature:", intermediateCount, ", selected column (idx.):", maxIndex, ", Kappa*:", maxKappaStar, ", elapsed (sec.):", (proc.time() - start_time)["elapsed"], "\n")
+          cat("Selecting Feature:", intermediateCount, "- selected column (idx.):", maxIndex, ", Kappa*:", maxKappaStar, ", elapsed (sec.):", (proc.time() - start_time)["elapsed"], "\n")
         }
       }
 
       if (maxKappaStar >= kappa.star.cap) {
         warning(
-          "Adjust arguments to include more or fewer features, if needed.\nThe feature selection process paused automatically because kappa* of currently selected features reached the pre-set 'kappa.star.cap' value. "
+          "The feature selection process paused automatically because kappa* of currently selected features reached the 'kappa.star.cap' value."
         )
       }
 
       if (length(indexCASMI) >= feature.num.cap) {
         warning(
-          "Adjust arguments to include more or fewer features, if needed.\nThe feature selection process paused automatically because the number of selected features reached the pre-set 'feature.num.cap' value."
+          "The feature selection process paused automatically because the number of selected features reached the 'feature.num.cap' value."
         )
       }
     }
 
     if(intermediate.steps) {
-      cat("The end.\n")
+      cat("---End of intermediate process.---\n")
       cat("In progress of generating summary.\n\n")
     }
 

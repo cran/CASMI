@@ -10,26 +10,33 @@ MI.test=function(feature, outcome, k1, k2){ #feature is the vector of X, outcome
 #'
 #' A quantitative measure of dataset quality. The AQI Index score indicates the degree that how features are associated with the outcome in a dataset. (synonyms of "feature": "variable" "factor" "attribute") \cr
 #' For more information, please refer to the corresponding publication: Shi, J., Zhang, J. and Ge, Y. (2019), "An Association-Based Intrinsic Quality Index for Healthcare Dataset Ranking" <doi:10.1109/ICHI.2019.8904553>
-#' @param data data frame (features as columns and observations as rows). It requires at least one feature and only one outcome. The features must be discrete. The outcome variable (Y) must be in the last column.
+#' @param data data frame (features as columns and observations as rows). The outcome variable (Y) MUST be the last column. It requires at least one features and only one outcome. Both the features (Xs) and the outcome (Y) MUST be discrete (if not naturally discrete, you may try the `autoBin.binary` function in the same package).
 #' @param alpha.filter level of significance for the mutual information test of independence in step 2 (<doi:10.1109/ICHI.2019.8904553>). By default, `alpha.filter = 0.2`.
 #' @return The AQI Index score.
 #' @importFrom EntropyEstimation Entropy.z MI.z
 #' @examples
 #' ## Generate a toy dataset: "data"
-#' n=10000
-#' x1=rbinom(n,3,0.5)+0.2
-#' x2=rbinom(n,2,0.8)+0.5
-#' x3=rbinom(n,5,0.3)
-#' error=round(runif(n,min=-1,max=1))
-#' y=x1+x3+error
-#' data=data.frame(cbind(x1,x2,x3,y))
-#' colnames(data) = c("feature1", "feature2", "feature3", "Y")
+#' n <- 10000
+#' set.seed(1)
+#' x1 <- rbinom(n, 3, 0.5) + 0.2
+#' set.seed(2)
+#' x2 <- rbinom(n, 2, 0.8) + 0.5
+#' set.seed(3)
+#' x3 <- rbinom(n, 5, 0.3)
+#' set.seed(4)
+#' error <- round(runif(n, min=-1, max=1))
+#' y <- x1 + x3 + error
+#' data <- data.frame(cbind(x1, x2, x3, y))
+#' colnames(data) <- c("feature1", "feature2", "feature3", "Y")
 #'
 #' ## Calculate the AQI score of "data"
 #' AQI(data)
 #' @export
 
 AQI <- function(data, alpha.filter=0.2){ #outcome must be in the last column
+
+  data <- as.data.frame(data)
+
   score=NULL
 
   # Step 1: return dependent features, step1Index[]
@@ -53,7 +60,7 @@ AQI <- function(data, alpha.filter=0.2){ #outcome must be in the last column
   indexCASMI=vector()
 
   if(count==0){
-    warning("No associated variables are found toward the outcome, thus the AQI score is zero. First, please ensure that the inputted data is in the data frame format (data.frame()) as the format may affect the result. Second, please ensure that the outcome variable is in the last column. Third, please ensure that a reasonable alpha.filter is set, or use the default value.")
+    warning("No associated variables are found toward the outcome, thus the AQI score is zero. First, please ensure that the outcome variable is the last column. Second, please ensure that a reasonable alpha.filter is set, or use the default value.")
     score=0
   } else{
     # Step 2: select features by joint SMI with Hz estimator

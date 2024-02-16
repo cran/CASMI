@@ -29,14 +29,15 @@ autoBinThresh <- function(data, colIndex){ # column index of X that needs auto b
 
 #' Auto Binning for Quantitative Variables - Binary
 #'
-#' Automatically suggest the optimal cutting point for categorizing a quantitative variable before using the \pkg{CASMI}-based functions. This function does binary cutting, that is, to convert the quantitative variable into a categorical variable with two levels/categories.
-#' @param data data frame. An outcome variable is required. The outcome variable (Y) must be in the last column.
-#' @param index index or a vector of indices of the quantitative variable(s) that need(s) to be automatically categorized.
+#' Automatically suggest an optimal cutting point for categorizing a quantitative variable before using the \pkg{CASMI}-based functions. This function does binary cutting, that is, to convert the quantitative variable into a categorical variable with two levels/categories.
+#' @param data data frame (features as columns and observations as rows). An outcome variable is required. The outcome variable (Y) MUST be the last column.
+#' @param index index or a vector of indices of the quantitative variables that need to be automatically categorized.
 #' @return `autoBin.binary()` returns the entire data frame after automatic binary categorization for the selected quantitative variable(s).
 #' @examples
 #' ## Use the "iris" dataset embedded in R
 #' data("iris")
-#' autoBin.binary(iris, c(1,2,3,4))
+#' newData <- autoBin.binary(iris, c(1,2,3,4))
+#' newData
 #'
 #' @importFrom EntropyEstimation MI.z
 #' @importFrom stats na.omit
@@ -46,10 +47,14 @@ autoBinThresh <- function(data, colIndex){ # column index of X that needs auto b
 
 # return the finalized data frame after auto binning
 autoBin.binary <- function(data, index){
-  # Check if the inputs are of correct type
+
   if (!is.data.frame(data)) {
     stop("The 'data' input must be a dataframe.")
   }
+
+  data <- as.data.frame(data)
+
+  # Check if the inputs are of correct type
   if (!is.numeric(index)) {
     stop("The 'index' input must be an index or a vector of indices.")
   }

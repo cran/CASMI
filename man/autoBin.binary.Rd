@@ -7,19 +7,20 @@
 autoBin.binary(data, index)
 }
 \arguments{
-\item{data}{data frame. An outcome variable is required. The outcome variable (Y) must be in the last column.}
+\item{data}{data frame (features as columns and observations as rows). An outcome variable is required. The outcome variable (Y) MUST be the last column.}
 
-\item{index}{index or a vector of indices of the quantitative variable(s) that need(s) to be automatically categorized.}
+\item{index}{index or a vector of indices of the quantitative variables that need to be automatically categorized.}
 }
 \value{
 `autoBin.binary()` returns the entire data frame after automatic binary categorization for the selected quantitative variable(s).
 }
 \description{
-Automatically suggest the optimal cutting point for categorizing a quantitative variable before using the \pkg{CASMI}-based functions. This function does binary cutting, that is, to convert the quantitative variable into a categorical variable with two levels/categories.
+Automatically suggest an optimal cutting point for categorizing a quantitative variable before using the \pkg{CASMI}-based functions. This function does binary cutting, that is, to convert the quantitative variable into a categorical variable with two levels/categories.
 }
 \examples{
 ## Use the "iris" dataset embedded in R
 data("iris")
-autoBin.binary(iris, c(1,2,3,4))
+newData <- autoBin.binary(iris, c(1,2,3,4))
+newData
 
 }

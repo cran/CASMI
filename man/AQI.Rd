@@ -7,7 +7,7 @@
 AQI(data, alpha.filter = 0.2)
 }
 \arguments{
-\item{data}{data frame (features as columns and observations as rows). It requires at least one feature and only one outcome. The features must be discrete. The outcome variable (Y) must be in the last column.}
+\item{data}{data frame (features as columns and observations as rows). The outcome variable (Y) MUST be the last column. It requires at least one features and only one outcome. Both the features (Xs) and the outcome (Y) MUST be discrete (if not naturally discrete, you may try the `autoBin.binary` function in the same package).}
 
 \item{alpha.filter}{level of significance for the mutual information test of independence in step 2 (<doi:10.1109/ICHI.2019.8904553>). By default, `alpha.filter = 0.2`.}
 }
@@ -20,14 +20,18 @@ For more information, please refer to the corresponding publication: Shi, J., Zh
 }
 \examples{
 ## Generate a toy dataset: "data"
-n=10000
-x1=rbinom(n,3,0.5)+0.2
-x2=rbinom(n,2,0.8)+0.5
-x3=rbinom(n,5,0.3)
-error=round(runif(n,min=-1,max=1))
-y=x1+x3+error
-data=data.frame(cbind(x1,x2,x3,y))
-colnames(data) = c("feature1", "feature2", "feature3", "Y")
+n <- 10000
+set.seed(1)
+x1 <- rbinom(n, 3, 0.5) + 0.2
+set.seed(2)
+x2 <- rbinom(n, 2, 0.8) + 0.5
+set.seed(3)
+x3 <- rbinom(n, 5, 0.3)
+set.seed(4)
+error <- round(runif(n, min=-1, max=1))
+y <- x1 + x3 + error
+data <- data.frame(cbind(x1, x2, x3, y))
+colnames(data) <- c("feature1", "feature2", "feature3", "Y")
 
 ## Calculate the AQI score of "data"
 AQI(data)

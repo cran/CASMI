@@ -11,11 +11,11 @@ CASMI.selectFeatures(
   alpha = 0.05,
   intermediate.steps = TRUE,
   kappa.star.cap = 1,
-  feature.num.cap = 15
+  feature.num.cap = ncol(data)
 )
 }
 \arguments{
-\item{data}{data frame (features as columns and observations as rows). It requires at least one feature and only one outcome. The features must be discrete. The outcome variable (Y) must be in the last column.}
+\item{data}{data frame (features as columns and observations as rows). The outcome variable (Y) MUST be the last column. It requires at least one features and only one outcome. Both the features (Xs) and the outcome (Y) MUST be discrete (if not naturally discrete, you may try the `autoBin.binary` function in the same package).}
 
 \item{feature.na.handle}{options for handling NA values in the data. There are three options: `"stepwise", "na.omit", "NA as a category"`. `feature.na.handle = "stepwise"` excludes NA rows only when a particular variable is being calculated. For example, suppose we have data(Feature1: A, NA, B; Feature2: C, D, E; Feature3: F, G, H; Outcome: O, P, Q); the second observation will be excluded only when a particular step includes Feature1, but will not be excluded when a step calculates among Feature2, Feature3, and the Outcome. This option is designed to take advantage of a maximum number of data points. `feature.na.handle = "na.omit"` excludes observations with any NA values at the beginning of the analysis. `feature.na.handle = "NA as a category"` regards the NA value as a new category. This is designed to be used when NA values in the data have a consistent meaning instead of being missing values. For example, in survey data asking for comments, each NA value might consistently mean "no opinion." By default, `feature.na.handle = "stepwise"`.}
 
@@ -23,14 +23,14 @@ CASMI.selectFeatures(
 
 \item{alpha}{level of significance for the confidence intervals in final results. By default, `alpha = 0.05`.}
 
-\item{intermediate.steps}{output intermediate steps. By default, `intermediate.steps = TRUE`. Set to `FALSE` for showing only summary results.}
+\item{intermediate.steps}{output the intermediate process. By default, `intermediate.steps = TRUE`. Set to `FALSE` for showing only summary results.}
 
-\item{kappa.star.cap}{a threshold of `kappa*` for pausing the feature selection process. The program will automatically pause at the first feature of which the `kappa*` value exceeds the kappa.star.cap threshold. By default, `kappa.star.cap = 1.0`, which is the maximum possible value, and this will include all possible features. A smaller value may result in less final features but a shorter computing time.}
+\item{kappa.star.cap}{a threshold of `kappa*` for pausing the feature selection process. The program will automatically pause at the first feature of which the `kappa*` value exceeds the kappa.star.cap threshold. By default, `kappa.star.cap = 1.0`, which is the maximum possible value. A lower value may result in fewer final features but less computing time.}
 
-\item{feature.num.cap}{the maximum number of features to be selected. By default, `feature.num.cap = 15`. A higher value may result in more final features but a longer computing time.}
+\item{feature.num.cap}{the maximum number of features to be selected. A lower value may result in fewer final features but less computing time.}
 }
 \value{
-`CASMI.selectFeatures()` returns selected features and relevant information, including the estimated Kappa* for all selected features (`$KappaStar`) and the corresponding confidence interval (`$KappaStarCI`). The selected features are ranked. The Standardized Mutual Information using the z estimator (`SMIz`) and the corresponding confidence interval (`CI.SMIz.Lower` and `CI.SMIz.Upper`) are given for each selected feature. The p-value from the mutual information test of independence using the z estimator (`P-value.MIz`) is given for each selected feature.
+`CASMI.selectFeatures()` returns selected features and relevant information, including the estimated Kappa* for all selected features (`$KappaStar`) and the corresponding confidence interval (`$KappaStarCI`). The selected features are ranked. The Standardized Mutual Information using the z estimator (`SMIz`) and the corresponding confidence interval (`SMIz.Low` for lower bound, `SMIz.Upr` for upper bound) are given for each selected feature (`Var.Idx` for column index, `Var.Name` for column name). The p-value from the mutual information test of independence using the z estimator (`p.MIz`) is given for each selected feature.
 }
 \description{
 Selects the most relevant features toward an outcome. It automatically learns the number of features to be selected, and the selected features are ranked. The method automatically handles the feature redundancy issue. (synonyms of "feature": "variable" "factor" "attribute") \cr
@@ -39,7 +39,7 @@ For more information, please refer to the corresponding publication: Shi, J., Zh
 \examples{
 ## Generate a toy dataset: "data"
 ## Features 1 and 3 are associated with Y, while feature 2 is irrelevant.
-## The outcome variable Y must be discrete and in the LAST column. Features must be discrete.
+## The outcome variable Y must be discrete and be the LAST column. Features must be discrete.
 n <- 10000
 set.seed(1)
 x1 <- rbinom(n, 3, 0.5) + 0.2
@@ -55,5 +55,14 @@ colnames(data) <- c("feature1", "feature2", "feature3", "Y")
 
 ## Select features and provide relevant results for the toy dataset "data"
 CASMI.selectFeatures(data)
+
+## For showing only the summary results
+CASMI.selectFeatures(data, intermediate.steps = FALSE)
+
+## Adjust 'feature.num.cap' for including fewer features.
+## A lower 'feature.num.cap' value may result in fewer final features but less computing time.
+## For example, if needing only the top one feature based on the toy dataset:
+CASMI.selectFeatures(data, feature.num.cap = 1)
+
 
 }
